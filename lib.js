@@ -1,52 +1,66 @@
 var version = 0.5;
 
-var Telismo_DDP = DDP.connect("http://telismo.com/api");
+var Telismo_DDP = DDP.connect("http://localhost:3000");
 var CallDocs = new Meteor.Collection("calls", Telismo_DDP);
 Telismo_DDP.subscribe("api");
 var _callbacks = [];
 
-Telismo = {
-	API : function(apiKey, apiSecret) {
-		if(!(this instanceof Telismo.API))
-			throw new Error("Please use the 'new' keyword when initializing a Telismo instance");
+Telismo = function(apiKey) {
+	var self = this;
 
-		var self = this;
+	Telismo_DDP.call("api/login", apiKey);
 
-		callbackHandle = CallDocs.find().observe({
-			added: function (document) {
-				if(!callbackHandle) return;
-
-				if(document._id in _callbacks) {
-					var callback = _callbacks[document._id];
-					if(callback) callback(document);
-				}
-				else {
-					self.callback(document);
-				}
-			}
-		});
-
-		this.call = function(params, callback) {
-			var result = Telismo_DDP.call("api/new", params);
-			if(result && result.success == true) {
-				if(result.id instanceof Array) {
-					for(var i = 0; i<result.id.length; i++) {
-						_callbacks[result.id] = callback
-					}
+	callbackHandle = CallDocs.find().observe({
+		added: function (document) {
+			if(!callbackHandle) return;
+			console.log(document);
+			if(document._id in _callbacks) {
+				var callback = _callbacks[document._id];
+				if(document.error) {
+					if(callback) callback({errors: document.error, status: document.status});
 				}else{
-					_callbacks[result.id] = callback;
+					if(callback) callback(null, document.output);
 				}
 			}
-			return result.id;
+			else {
+				if(document.error) {
+					if(self.callback) self.callback({errors: document.error, status: document.status});
+				}else{
+					if(self.callback) self.callback(null, document);
+				}
+			}
 		}
+	});
 
-		this.calls = function() {
-			return CallDocs;
+	this.call = function(params, callback) {
+		var result = Telismo_DDP.call("api/new", apiKey, params);
+		if(result && result.success == true) {
+			if(result.id instanceof Array) {
+				for(var i = 0; i<result.id.length; i++) {
+					_callbacks[result.id] = callback
+				}
+			}else{
+				_callbacks[result.id] = callback;
+			}
 		}
+		return result.id;
+	}
 
-		this.callback = function(callData) {
-
+	this.list = function() {
+		var result = Telismo_DDP.call("api/list", apiKey, params);
+		if(result && result.success == true) {
+			return result; 
 		}
-	},
-	version: version
+		return [];
+	}
+
+	this.calls = function() {
+		return CallDocs;
+	}
+
+	this.callback = function(callData) {
+
+	}
+
+	return this;
 }
