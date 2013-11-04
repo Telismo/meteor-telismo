@@ -54,6 +54,19 @@ Telismo = function(apiKey) {
 		return [];
 	}
 
+	this.cancel = function(callIds) {
+		var params = {id: callIds};
+
+		try {
+			var result = Telismo_DDP.call("api/cancel", apiKey, callIds);
+		}
+		catch(e){
+			return {success: false, error:["Internal Server Error. Try again later"]}
+		}
+		
+		return result;
+	}
+
 	this.calls = function() {
 		return CallDocs;
 	}
