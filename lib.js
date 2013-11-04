@@ -1,6 +1,6 @@
 var version = 0.5;
 
-var Telismo_DDP = DDP.connect("http://localhost:3000");
+var Telismo_DDP = DDP.connect("http://telismo.com");
 var CallDocs = new Meteor.Collection("calls", Telismo_DDP);
 Telismo_DDP.subscribe("api");
 var _callbacks = [];
