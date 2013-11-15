@@ -1,6 +1,6 @@
 var version = 0.5;
 
-var Telismo_DDP = DDP.connect("http://telismo.com");
+var Telismo_DDP = DDP.connect("https://telismo.com");
 var CallDocs = new Meteor.Collection("calls", Telismo_DDP);
 Telismo_DDP.subscribe("api");
 var _callbacks = [];
@@ -13,7 +13,6 @@ Telismo = function(apiKey) {
 	callbackHandle = CallDocs.find().observe({
 		added: function (document) {
 			if(!callbackHandle) return;
-			console.log(document);
 			if(document._id in _callbacks) {
 				var callback = _callbacks[document._id];
 				if(document.error) {
@@ -46,25 +45,71 @@ Telismo = function(apiKey) {
 		return result.id;
 	}
 
-	this.list = function() {
-		var result = Telismo_DDP.call("api/list", apiKey, params);
+	this.quote = function(params) {
+		var result = Telismo_DDP.call("api/quote", apiKey, params);
 		if(result && result.success == true) {
-			return result; 
+			if(result) return result;
 		}
-		return [];
+		return result.id;
 	}
 
-	this.cancel = function(callIds) {
-		var params = {id: callIds};
-
+	this.list = function(params) {
 		try {
-			var result = Telismo_DDP.call("api/cancel", apiKey, callIds);
+			var result = Telismo_DDP.call("api/list", apiKey, params);
+		
+			if(result) {
+				return result; 
+			}else
+				return [];
+			}catch(e) {
+			throw new Meteor.Error(500, 'Internal Server Error. Please try again later');
+		}
+	}
+
+	this.fetch = function(id) {
+		try {
+			var result = Telismo_DDP.call("api/fetch", apiKey, id);
+
+			if(result) {
+				return result;
+			}else
+				return null;
+			}catch(e) {
+			throw new Meteor.Error(500, 'Internal Server Error. Please try again later');
+		}
+	}
+
+	this.cancel = function(callId) {
+		try {
+			var result = Telismo_DDP.call("api/cancel", apiKey, callId);
 		}
 		catch(e){
+			throw new Meteor.Error(500, 'Internal Server Error. Please try again later');
+			return {success: false, error:["Internal Server Error. Try again later"]}
+		}
+
+		if(result) {
+			return result;
+		}else{
+			throw new Meteor.Error(404, 'Error 403: API Key incorrect');
+		}
+	}
+
+	this.getBalance = function() {
+		try {
+			var result = Telismo_DDP.call("api/balance", apiKey);
+		}
+		catch(e){
+			throw new Meteor.Error(500, 'Telismo Internal Server Error. Please try again later');
 			return {success: false, error:["Internal Server Error. Try again later"]}
 		}
 		
-		return result;
+		if(result) {
+			return result;
+		}else{
+			throw new Meteor.Error(403, 'Telismo API key not valid. Please get a new key from your telismo dashboard');
+		}
+
 	}
 
 	this.calls = function() {
