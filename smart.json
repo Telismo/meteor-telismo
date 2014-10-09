@@ -1,8 +1,0 @@
-{
-  "name": "telismo",
-  "description": "Integrate your app with the telismo api",
-  "homepage": "https://github.com/telismo/meteor-telismo",
-  "author": "Telismo  (http://telismo.com)",
-  "version": "0.1.0",
-  "git": "https://github.com/telismo/meteor-telismo.git"
-}

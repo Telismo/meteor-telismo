@@ -1,6 +1,6 @@
 Package.describe({
 	summary: "API handlers for the Telismo API",
-	version: "0.6.0",
+	version: "0.6.2",
 	name: "telismo:core",
 	git: "https://github.com/Telismo/meteor-telismo.git"
 });

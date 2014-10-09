@@ -1,6 +1,6 @@
-var version = 0.6;
+var version = 0.62;
 
-var Telismo_DDP = DDP.connect("https://telismo.com");
+var Telismo_DDP = DDP.connect("http://core.telismo.com");
 var CallDocs = new Mongo.Collection("calls", {connection: Telismo_DDP});
 Telismo_DDP.subscribe("api");
 var _callbacks = [];
